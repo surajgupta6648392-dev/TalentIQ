@@ -1,0 +1,53 @@
+name: CI/CD Pipeline & Automated Deployment
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test-and-build:
+    name: Lint, Test & Production Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Runtime (v20)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: TypeScript Lint & Typecheck
+        run: npm run lint
+
+      - name: Build Production Frontend Assets
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-dist
+          path: dist/
+          retention-days: 7
+
+  deploy:
+    name: Trigger Cloud Deployment (Render / Vercel)
+    needs: test-and-build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Trigger Render Backend Deploy Webhook
+        if: env.RENDER_DEPLOY_HOOK_URL != ''
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          curl -X POST -s "$RENDER_DEPLOY_HOOK_URL"
+          echo "Render deployment webhook triggered successfully."

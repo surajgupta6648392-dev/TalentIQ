@@ -1,0 +1,7 @@
+{
+  "name": "TalentIQ - AI Resume Shortlisting & Candidate Screening",
+  "description": "Production-grade AI resume parsing, semantic candidate matching, explainable scoring breakdown, fair screening, and hiring pipeline platform for HR teams.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
